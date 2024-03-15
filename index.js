@@ -2,19 +2,42 @@ const chatForm = get('form');
 const chatInput = get('input');
 const chatBox = get('main');
 
-appendMessage('bot', 'This is a bot bubble');
-appendMessage('user', 'This is a user bubble');
+appendMessage('bot', 'Hello! I am med bot. Here to diagnose you!');
+appendMessage('bot', 'Please enter your symptoms in a comma separated list. Eg: fever, cough, headache');
+
+// appendMessage('user', 'This is a user bubble');
+
+let q_num = 0;
+
+let symptoms_list = "";
+
+let diagnosed_condition = "";
+
+
+
 
 chatForm.addEventListener('submit', async event => {
   event.preventDefault();
   const text = chatInput.value;
   if (!text) return;
-  
-  appendMessage('user', text);
   chatInput.value = '';
 
-  let x = await query({  "inputs": text} );
-  appendMessage('bot', x);
+  if(q_num == 0){
+    appendMessage('user', text);
+    symptoms_list = text;
+    appendMessage('bot', 'How long have you been experiencing these symptoms?');
+    q_num += 1;
+  }else if(q_num == 1){
+    appendMessage('user', text);
+
+    let message = "Question: The patient has the following symptoms: " + symptoms_list + ". The patient has been experiencing these symptoms for " + text + ". What condition would this be? \n\n Answer:";
+    let x = await query({  "inputs": message} );
+
+
+    diagnosed_condition = x.substring(x.indexOf(" of ") + 4, x.length);    
+    appendMessage('bot', x);
+    q_num += 1;
+  }
 
 
 });
@@ -41,9 +64,14 @@ async function query(data) {
 		}
 	);
 	const result = await response.json();
-  console.log(result[0]['generated_text']);
+  
+  // await getSymptoms(result[0]['generated_text']);
+
 	return result[0]['generated_text'];
 }
+
+
+
 
 // Utils
 function get(selector, root = document) {
