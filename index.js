@@ -3,7 +3,7 @@ const chatInput = get('input');
 const chatBox = get('main');
 
 appendMessage('bot', 'Hello! I am med bot. Here to diagnose you!');
-appendMessage('bot', 'Please enter your symptoms in a comma separated list. Eg: fever, cough, headache');
+appendMessage('bot', 'Please enter your symptoms. Eg: fever, cough, headache');
 
 // appendMessage('user', 'This is a user bubble');
 
@@ -34,9 +34,26 @@ chatForm.addEventListener('submit', async event => {
     let x = await query({  "inputs": message} );
 
 
-    diagnosed_condition = x.substring(x.indexOf(" of ") + 4, x.length);    
-    appendMessage('bot', x);
-    q_num += 1;
+    diagnosed_condition = x.substring(x.indexOf(" of ") + 4, x.length -1 );    
+    // appendMessage('bot', x);
+
+    // Answer if hospital is needed, meds. etc...
+
+    message1 = "Question: What over-the-counter medication can I use to help with " + diagnosed_condition + "? \n\n Answer:";
+
+    message2 = "Question: Should i visit my doctor or emergency room if I had " + diagnosed_condition + " for a duration of "  + text + "? \n\n Answer:";
+
+
+    x = await query({  "inputs": message1} );
+    y = await query({  "inputs": message2} );
+
+    appendMessage('bot', "You have been diagonised with " + diagnosed_condition + ".");
+
+    appendMessage('bot', x + "\n\n" + y);
+    q_num = 0;
+    appendMessage('bot', 'Thank you!');
+    appendMessage('bot', 'Please enter your symptoms. Eg: fever, cough, headache');
+
   }
 
 
