@@ -30,9 +30,9 @@ chatForm.addEventListener('submit', async event => {
     appendMessage('bot', 'How long have you been experiencing these symptoms?');
     q_num += 1;
   }else if(q_num == 1){
-    
+    let duration = text;
 
-    let message = "Question: The patient has the following symptoms: " + symptoms_list + ". The patient has been experiencing these symptoms for " + text + ". What condition would this be? \n\n Answer:";
+    let message = "Question: The patient has the following symptoms: " + symptoms_list + ". The patient has been experiencing these symptoms for " + duration + ". What condition would this be? \n\n Answer:";
     let x = await query({  "inputs": message} );
 
 
