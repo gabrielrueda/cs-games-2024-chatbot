@@ -15,6 +15,8 @@ let diagnosed_condition = "";
 
 let not_conditions = [];
 
+let duration = "";
+
 
 
 
@@ -30,10 +32,10 @@ chatForm.addEventListener('submit', async event => {
     appendMessage('bot', 'How long have you been experiencing these symptoms?');
     q_num += 1;
   }else if(q_num == 1){
-    let duration = text;
+    duration = text;
 
     let message = "Question: The patient has the following symptoms: " + symptoms_list + ". The patient has been experiencing these symptoms for " + duration + ". What condition would this be? \n\n Answer:";
-    let x = await query({  "inputs": message} );
+    let x = await query({  "inputs": message } );
 
 
     diagnosed_condition = x.substring(x.indexOf(" of ") + 4, x.length -1 );   
@@ -55,15 +57,47 @@ chatForm.addEventListener('submit', async event => {
 
       message1 = "Question: What over-the-counter medication can I use to help with " + diagnosed_condition + "? \n\n Answer:";
 
-      message2 = "Question: Should i visit my doctor or emergency room if I had " + diagnosed_condition + " for a duration of "  + text + "? \n\n Answer:";
+      message2 = "Question: Should i visit my doctor or emergency room if I had " + diagnosed_condition + " for a duration of "  + duration + "? \n\n Answer:";
 
 
-      x = await query({  "inputs": message1} );
-      y = await query({  "inputs": message2} );
+      x = await query({  "inputs": message1, "parameters": {"max_length": 20}} );
+      y = await query({  "inputs": message2 , "parameters": {"max_length": 20}} );
 
-      appendMessage('bot', "You have been diagonised with " + diagnosed_condition + ".");
+      // appendMessage('bot', "You have been diagonised with " + diagnosed_condition + ".");
 
-      appendMessage('bot', x + "\n\n" + y);
+      let response1 = "";
+      let response2 = "";
+
+      if(x.includes("Answer:") && x.includes("Question:")){
+        response1 = x.substring(0, x.indexOf("Question:"));
+      }
+
+      else if(x.includes("Answer:")){
+        response1 = x.substring(0, x.indexOf("Answer:"));
+      }
+      else if(x.includes("Question:")){
+        response1 = x.substring(0, x.indexOf("Question:"));
+      }else{
+        response1 = x;
+      }
+
+
+      if(y.includes("Answer:") && y.includes("Question:")){
+        response2 = y.substring(0, y.indexOf("Question:"));
+      }
+
+      else if(y.includes("Answer:")){
+        response2 = y.substring(0, y.indexOf("Answer:"));
+      }
+      else if(y.includes("Question:")){
+        response2 = y.substring(0, y.indexOf("Question:"));
+      }else{
+        response2 = y;
+      }
+
+      appendMessage('bot', response1.substring(0, response1.lastIndexOf(".")));
+      appendMessage('bot', response2.substring(0, response2.lastIndexOf(".")));
+
       appendMessage('bot', 'Thank you!');
       q_num += 1;
     }
@@ -71,7 +105,7 @@ chatForm.addEventListener('submit', async event => {
     else if (text == "no"){
       not_conditions.push(diagnosed_condition);
 
-      let message = "Question: The patient has the following symptoms: " + symptoms_list + ". The patient has been experiencing these symptoms for " + text + ". ";
+      let message = "Question: The patient has the following symptoms: " + symptoms_list + ". The patient has been experiencing these symptoms for " + duration + ". ";
       
       for(let i = 0; i < not_conditions.length; i++){
         message += "The patient does not have " + not_conditions[i] + ". ";
@@ -82,15 +116,27 @@ chatForm.addEventListener('submit', async event => {
       
       let x = await query({  "inputs": message} );
   
-  
-      diagnosed_condition = x.substring(x.indexOf(" of ") + 4, x.length -1 );   
+      diagnosed_condition = "";
+
+      if(x.includes(" of ")){
+        diagnosed_condition = x.substring(x.indexOf(" of ") + 4, x.length -1 );   
+      }else if(x.includes(" has ")){
+        diagnosed_condition = x.substring(x.indexOf(" has ") + 5, x.length -1 );;
+      }else{
+        diagnosed_condition = x.substring(x.indexOf(" have ") + 6, x.length -1 );;
+      }
+
+
+      console.log(x);
+
       
       appendMessage('bot', "You have been diagonised with " + diagnosed_condition + ".");
   
       message = "Question: Describe the symptoms for " + diagnosed_condition + ". \n\n Answer:";
       x = await query({  "inputs": message} );
   
-      appendMessage('bot', x);
+      appendMessage('bot', x.substring(0, x.lastIndexOf(".")));
+
 
       appendMessage('bot', 'Is this correct (yes/no)?');
 
@@ -102,26 +148,6 @@ chatForm.addEventListener('submit', async event => {
     }
   
   }
-    // appendMessage('bot', x);
-
-    
-
-    // Answer if hospital is needed, meds. etc...
-
-    // message1 = "Question: What over-the-counter medication can I use to help with " + diagnosed_condition + "? \n\n Answer:";
-
-    // message2 = "Question: Should i visit my doctor or emergency room if I had " + diagnosed_condition + " for a duration of "  + text + "? \n\n Answer:";
-
-
-    // x = await query({  "inputs": message1} );
-    // y = await query({  "inputs": message2} );
-
-    // appendMessage('bot', "You have been diagonised with " + diagnosed_condition + ".");
-
-    // appendMessage('bot', x + "\n\n" + y);
-    // q_num += 1;
-    // appendMessage('bot', 'Thank you!');
-
 
 });
 
@@ -147,12 +173,8 @@ async function query(data) {
 		}
 	);
 	const result = await response.json();
-  
-  // await getSymptoms(result[0]['generated_text']);
-
 	return result[0]['generated_text'];
 }
-
 
 
 
