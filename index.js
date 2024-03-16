@@ -13,6 +13,8 @@ let symptoms_list = "";
 
 let diagnosed_condition = "";
 
+let not_conditions = [];
+
 
 
 
@@ -21,40 +23,104 @@ chatForm.addEventListener('submit', async event => {
   const text = chatInput.value;
   if (!text) return;
   chatInput.value = '';
+  appendMessage('user', text);
 
   if(q_num == 0){
-    appendMessage('user', text);
     symptoms_list = text;
     appendMessage('bot', 'How long have you been experiencing these symptoms?');
     q_num += 1;
   }else if(q_num == 1){
-    appendMessage('user', text);
+    
 
     let message = "Question: The patient has the following symptoms: " + symptoms_list + ". The patient has been experiencing these symptoms for " + text + ". What condition would this be? \n\n Answer:";
     let x = await query({  "inputs": message} );
 
 
-    diagnosed_condition = x.substring(x.indexOf(" of ") + 4, x.length -1 );    
+    diagnosed_condition = x.substring(x.indexOf(" of ") + 4, x.length -1 );   
+    
+    appendMessage('bot', "You have been diagonised with " + diagnosed_condition + ".");
+
+    message = "Question: Describe the symptoms for " + diagnosed_condition + ". \n\n Answer:";
+    x = await query({  "inputs": message} );
+
+    appendMessage('bot', x);
+    appendMessage('bot', 'Is this correct (yes/no)?');
+
+    q_num += 1;
+
+  }else if(q_num == 2){
+
+    if(text == "yes"){
+      // Answer if hospital is needed, meds. etc...
+
+      message1 = "Question: What over-the-counter medication can I use to help with " + diagnosed_condition + "? \n\n Answer:";
+
+      message2 = "Question: Should i visit my doctor or emergency room if I had " + diagnosed_condition + " for a duration of "  + text + "? \n\n Answer:";
+
+
+      x = await query({  "inputs": message1} );
+      y = await query({  "inputs": message2} );
+
+      appendMessage('bot', "You have been diagonised with " + diagnosed_condition + ".");
+
+      appendMessage('bot', x + "\n\n" + y);
+      appendMessage('bot', 'Thank you!');
+      q_num += 1;
+    }
+
+    else if (text == "no"){
+      not_conditions.push(diagnosed_condition);
+
+      let message = "Question: The patient has the following symptoms: " + symptoms_list + ". The patient has been experiencing these symptoms for " + text + ". ";
+      
+      for(let i = 0; i < not_conditions.length; i++){
+        message += "The patient does not have " + not_conditions[i] + ". ";
+      }
+      
+      message += "What condition would this be? \n\n Answer:";
+      
+      
+      let x = await query({  "inputs": message} );
+  
+  
+      diagnosed_condition = x.substring(x.indexOf(" of ") + 4, x.length -1 );   
+      
+      appendMessage('bot', "You have been diagonised with " + diagnosed_condition + ".");
+  
+      message = "Question: Describe the symptoms for " + diagnosed_condition + ". \n\n Answer:";
+      x = await query({  "inputs": message} );
+  
+      appendMessage('bot', x);
+
+      appendMessage('bot', 'Is this correct (yes/no)?');
+
+      q_num = 2;
+
+    }
+    else{
+        appendMessage('bot', 'Please enter a valid input (yes/no)');
+    }
+  
+  }
     // appendMessage('bot', x);
+
+    
 
     // Answer if hospital is needed, meds. etc...
 
-    message1 = "Question: What over-the-counter medication can I use to help with " + diagnosed_condition + "? \n\n Answer:";
+    // message1 = "Question: What over-the-counter medication can I use to help with " + diagnosed_condition + "? \n\n Answer:";
 
-    message2 = "Question: Should i visit my doctor or emergency room if I had " + diagnosed_condition + " for a duration of "  + text + "? \n\n Answer:";
+    // message2 = "Question: Should i visit my doctor or emergency room if I had " + diagnosed_condition + " for a duration of "  + text + "? \n\n Answer:";
 
 
-    x = await query({  "inputs": message1} );
-    y = await query({  "inputs": message2} );
+    // x = await query({  "inputs": message1} );
+    // y = await query({  "inputs": message2} );
 
-    appendMessage('bot', "You have been diagonised with " + diagnosed_condition + ".");
+    // appendMessage('bot', "You have been diagonised with " + diagnosed_condition + ".");
 
-    appendMessage('bot', x + "\n\n" + y);
-    q_num = 0;
-    appendMessage('bot', 'Thank you!');
-    appendMessage('bot', 'Please enter your symptoms. Eg: fever, cough, headache');
-
-  }
+    // appendMessage('bot', x + "\n\n" + y);
+    // q_num += 1;
+    // appendMessage('bot', 'Thank you!');
 
 
 });
